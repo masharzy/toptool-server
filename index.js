@@ -22,7 +22,7 @@ const verifyJWT = (req, res, next) => {
     return res.status(401).send({ message: "UnAuthorized access" });
   }
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
     }
@@ -37,6 +37,7 @@ const run = async () => {
     //tools collection
     const toolsCollection = client.db("toptool").collection("tools");
     const usersCollection = client.db("toptool").collection("users");
+    const orderCollection = client.db("toptool").collection("orders");
 
     //get all tools
     app.get("/tools", async (req, res) => {
@@ -44,7 +45,7 @@ const run = async () => {
       res.send(tools);
     });
     //get tool by id
-    app.get("/tools/:id", verifyJWT, async (req, res) => {
+    app.get("/tool/:id", verifyJWT, async (req, res) => {
       const tool = await toolsCollection.findOne({
         _id: ObjectId(req.params.id),
       });
@@ -71,6 +72,19 @@ const run = async () => {
         { expiresIn: "1h" }
       );
       res.send({ result, token });
+    });
+
+    //get all orders
+    app.get("/orders", verifyJWT, async (req, res) => {
+      const orders = await orderCollection.find({}).toArray();
+      res.send(orders);
+    });
+
+    //post a order
+    app.post("/order", verifyJWT, async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
     });
 
     console.log("Connected to Database");
