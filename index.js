@@ -4,6 +4,7 @@ const cors = require("cors");
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 app.use(express.json());
 app.use(cors());
@@ -35,11 +36,41 @@ const run = async () => {
     await client.connect();
     //tools collection
     const toolsCollection = client.db("toptool").collection("tools");
-    
+    const usersCollection = client.db("toptool").collection("users");
+
     //get all tools
     app.get("/tools", async (req, res) => {
-        const tools = await toolsCollection.find({}).toArray();
-        res.send(tools);
+      const tools = await toolsCollection.find({}).toArray();
+      res.send(tools);
+    });
+    //get tool by id
+    app.get("/tools/:id", verifyJWT, async (req, res) => {
+      const tool = await toolsCollection.findOne({
+        _id: ObjectId(req.params.id),
+      });
+      res.send(tool);
+    });
+
+    //update or add a user
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1h" }
+      );
+      res.send({ result, token });
     });
 
     console.log("Connected to Database");
@@ -47,7 +78,7 @@ const run = async () => {
   }
 };
 
-run().catch(console.dir)
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("TOPTOOL");
