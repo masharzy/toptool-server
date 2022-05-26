@@ -79,12 +79,19 @@ const run = async () => {
       const orders = await orderCollection.find({}).toArray();
       res.send(orders);
     });
-
     //post a order
     app.post("/order", verifyJWT, async (req, res) => {
       const order = req.body;
       const result = await orderCollection.insertOne(order);
       res.send(result);
+    });
+    //get order by email
+    app.get("/order/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const order = await orderCollection.findOne({
+        email: email,
+      });
+      res.send(order);
     });
 
     console.log("Connected to Database");
