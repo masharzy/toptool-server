@@ -47,7 +47,7 @@ const run = async () => {
     //collections
     const toolsCollection = client.db("toptool").collection("tools");
     const usersCollection = client.db("toptool").collection("users");
-    const orderCollection = client.db("toptool").collection("orders");
+    const ordersCollection = client.db("toptool").collection("orders");
     const reviewsCollection = client.db("toptool").collection("reviews");
 
     //stripe api
@@ -79,6 +79,18 @@ const run = async () => {
       });
       res.send(tool);
     });
+    //delete tool by id
+    app.delete("/tool/:id", verifyJWT, async (req, res) => {
+      const tool = await toolsCollection.deleteOne({
+        _id: ObjectId(req.params.id),
+      });
+      res.send(tool);
+    });
+    //post a tool
+    app.post("/tool", verifyJWT, async (req, res) => {
+      const tool = await toolsCollection.insertOne(req.body);
+      res.send(tool);
+    });
 
     //update or add a user
     app.put("/user/:email", async (req, res) => {
@@ -100,6 +112,11 @@ const run = async () => {
         { expiresIn: "1h" }
       );
       res.send({ result, token });
+    });
+    //get all users
+    app.get("/users", async (req, res) => {
+      const users = await usersCollection.find({}).toArray();
+      res.send(users);
     });
     //get user by email
     app.get("/user/:email", verifyJWT, async (req, res) => {
@@ -125,6 +142,13 @@ const run = async () => {
       );
       res.send(result);
     });
+    //delete a user
+    app.delete("/user/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const user = await usersCollection.deleteOne(filter);
+      res.send(user);
+    });
 
     //check admin
     app.get("/admin/:email", verifyJWT, async (req, res) => {
@@ -133,16 +157,25 @@ const run = async () => {
       const isAdmin = user.role === "admin";
       res.send({ admin: isAdmin });
     });
-    
+    //make a user to admin
+    app.put("/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updatedDoc = {
+        $set: { role: "admin" },
+      };
+      const result = await usersCollection.updateOne(filter, updatedDoc);
+      return res.send(result);
+    });
 
     //get all orders
     app.get("/orders", verifyJWT, async (req, res) => {
-      const orders = await orderCollection.find({}).toArray();
+      const orders = await ordersCollection.find({}).toArray();
       res.send(orders);
     });
     //get order by id
     app.get("/order/:id", verifyJWT, async (req, res) => {
-      const order = await orderCollection.findOne({
+      const order = await ordersCollection.findOne({
         _id: ObjectId(req.params.id),
       });
       res.send(order);
@@ -154,30 +187,42 @@ const run = async () => {
       const updatedDoc = {
         $set: order,
       };
-      const result = await orderCollection.updateOne(filter, updatedDoc);
+      const result = await ordersCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
     //post a order
     app.post("/order", verifyJWT, async (req, res) => {
       const order = req.body;
-      const result = await orderCollection.insertOne(order);
+      const result = await ordersCollection.insertOne(order);
       res.send(result);
     });
     //get orders by email
     app.get("/orders/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
-      const orders = await orderCollection.find({ email: email }).toArray();
+      const orders = await ordersCollection.find({ email: email }).toArray();
       res.send(orders);
     });
     //delete order by id
     app.delete("/order/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
-      const result = await orderCollection.deleteOne({ _id: ObjectId(id) });
+      const result = await ordersCollection.deleteOne({ _id: ObjectId(id) });
       res.send(result);
     });
+    //change a order paid status to unpaid
+    app.put("/order/:id", verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const updatedDoc = {
+            $set: { paid: false },
+        };
+        const result = await ordersCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+    });
+
+
 
     //get all reviews
-    app.get("/reviews", verifyJWT, async (req, res) => {
+    app.get("/reviews", async (req, res) => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
     });
