@@ -85,13 +85,21 @@ const run = async () => {
       const result = await orderCollection.insertOne(order);
       res.send(result);
     });
-    //get order by email
-    app.get("/order/:email", verifyJWT, async (req, res) => {
+    //get orders by email
+    app.get("/orders/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
-      const order = await orderCollection.findOne({
+      const orders = await orderCollection.find({ email: email }).toArray();
+      res.send(orders);
+    });
+    //delete order byt email and id
+    app.delete("/order/:email/:id", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const id = req.params.id;
+      const result = await orderCollection.deleteOne({
         email: email,
+        _id: ObjectId(id),
       });
-      res.send(order);
+      res.send(result);
     });
 
     console.log("Connected to Database");
