@@ -148,7 +148,12 @@ const run = async () => {
       const reviews = await reviewsCollection.find({}).toArray();
       res.send(reviews);
     });
-
+    //post a review
+    app.post("/review", verifyJWT, async (req, res) => {
+      const review = req.body;
+      const result = await reviewsCollection.insertOne(review);
+      res.send(result);
+    });
 
     console.log("Connected to Database");
   } finally {
