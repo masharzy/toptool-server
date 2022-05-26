@@ -101,6 +101,39 @@ const run = async () => {
       );
       res.send({ result, token });
     });
+    //get user by email
+    app.get("/user/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({
+        email: email,
+      });
+      res.send(user);
+    });
+    //update user by email
+    app.put("/user/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //check admin
+    app.get("/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
+    });
+    
 
     //get all orders
     app.get("/orders", verifyJWT, async (req, res) => {
