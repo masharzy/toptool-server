@@ -208,18 +208,24 @@ const run = async () => {
       const result = await ordersCollection.deleteOne({ _id: ObjectId(id) });
       res.send(result);
     });
-    //change a order paid status to unpaid
-    app.put("/order/:id", verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const filter = { _id: ObjectId(id) };
-        const updatedDoc = {
-            $set: { paid: false },
-        };
-        const result = await ordersCollection.updateOne(filter, updatedDoc);
-        res.send(result);
+    //change a order paid status to unpaid using patch
+    app.patch("/unpaid/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await ordersCollection.updateOne(
+        { _id: ObjectId(id) },
+        { $set: { paid: false, status: null } }
+      );
+      res.send(result);
     });
-
-
+    //change a order paid status to unpaid using patch
+    app.patch("/shipped/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await ordersCollection.updateOne(
+        { _id: ObjectId(id) },
+        { $set: { status: "shipped" } }
+      );
+      res.send(result);
+    });
 
     //get all reviews
     app.get("/reviews", async (req, res) => {
