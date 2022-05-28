@@ -6,7 +6,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const stripe = require("stripe")(
-  "sk_test_51L2pFyD9mMGF7uwtLbkxkuJWQ2y1FdhFeCeHGHpfVRMUtlxkgaVg1xFXiZ0gYUhlK3K8t8CdMuaEy5ej2iFkDLH100HSt4qxRO"
+  process.env.STRIPE_SECRET_KEY
 );
 
 app.use(express.json());
