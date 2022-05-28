@@ -5,9 +5,7 @@ const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const stripe = require("stripe")(
-  process.env.STRIPE_SECRET_KEY
-);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(express.json());
 app.use(cors());
@@ -52,7 +50,7 @@ const run = async () => {
 
     //stripe api
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
-      const { price } = req.body;
+      const { totalPrice } = req.body;
       const amount = price * 100;
 
       // Create a PaymentIntent with the order amount and currency
