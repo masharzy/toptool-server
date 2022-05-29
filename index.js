@@ -32,13 +32,6 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-const auth = {
-  auth: {
-    api_key: "5fd4ca2fcd3a05a45608dba7931f4df7-8d821f0c-a5628f6c",
-    domain: "sandbox93c98eb79c584d85996b32292bc6f49f.mailgun.org",
-  },
-};
-
 const run = async () => {
   try {
     await client.connect();
@@ -51,7 +44,7 @@ const run = async () => {
     //stripe api
     app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { totalPrice } = req.body;
-      const amount = price * 100;
+      const amount = totalPrice * 100;
 
       // Create a PaymentIntent with the order amount and currency
       const paymentIntent = await stripe.paymentIntents.create({
